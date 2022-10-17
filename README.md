@@ -1,1 +1,66 @@
-# sd-2.github.io
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Sayan Das</title>
+	<link rel="stylesheet" type="text/css" href="css/style.css">
+</head>
+<body style="background-color: #e6faff">
+<header>
+	<div class="main">
+	<nav>
+	<div class="logo">
+		<img src="logo.jpg">
+	</div>
+		<ul>
+			<li><a href="index.html">Home</a></li>
+			<li><a href="research.html">Research</a></li>
+			<li><a href="teaching.html">Teaching</a></li>
+			<li><a href="seminar.html">Seminars</a></li>
+			<li><a href="cv.html">CV</a></li>
+			<li><a href="other.html">Others</a></li>
+		</ul>
+		
+	</nav>
+	<usl>
+			<li><a href="index.html">Sayan Das</a></li>
+			<h2>Department of Mathematics</h2>
+	</usl>
+
+<div1 class="wrapper col4">
+  <div id="container">
+    <div id="content">
+      <h2>About Me</h2>
+      <p><img  src="xd.jpg" style="margin-top:15px;width:269px;height:316px;margin-right:15px">
+Welcome!</p>
+      <p style="margin-top:1em">I am a fifth-year graduate student in the Department of Mathematics at Columbia University.</p>
+      <p style="margin-top:1em;margin-bottom:0.7em"> My advisor is <a href="https://www.math.columbia.edu/~corwin/">Ivan Corwin</a> and my main research interests include Probability Theory and Integrable Systems. Specifically I am interested in: 
+      </p><ull style="list-style-type:square">
+        <li style="margin-bottom:0.5em">Probabilistic aspects of KPZ models such as KPZ equation, ASEP, Directed Polymers etc.
+        </li><li> A little bit of graph coloring
+      </li></ull>
+	<p style="margin-top:1em;margin-bottom:1em">My list of publications is available in my <a href="research.html">Research</a> page. </p>
+	<p style="margin-top:1em;margin-bottom:1em"><b>I am on the postdoctoral job market in Fall 2022.</b></p>
+    </div>
+
+<div id="contact">
+<h2 style="margin-top:7em">Contact</h2>
+<p style="margin-bottom:1em"><strong>Email:</strong> sayan.das at columbia.edu</p>
+<h2>Address</h2>
+<p style="margin-top:1em">Department of Mathematics<br />
+Columbia University<br />
+Room 509, MC 4406<br />
+2990 Broadway<br />
+New York, NY 10027</p>
+</br></br></br>
+<!-- hitwebcounter Code START -->
+<a href="https://www.hitwebcounter.com" target="_blank">
+<img src="https://hitwebcounter.com/counter/counter.php?page=7715196&style=0007&nbdigits=9&type=page&initCount=0" title="Total Website Hits" Alt="Web Hits"   border="0" /></a>   
+</div>
+    
+    <br class="clear">
+  </div1>
+</div>
+	</div>
+</header>
+</body>
+</html>
