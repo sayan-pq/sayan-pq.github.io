@@ -7,29 +7,6 @@ header{
 	height: 45px;
 	background-color: #880404;
 }
-a:link {
-  color: #8f4242;
-  background-color: transparent;
-  text-decoration: none;
-}
-
-a:visited {
-  color: #8f4242;
-  background-color: transparent;
-  text-decoration: none;
-}
-
-a:hover {
-  color: #880404;
-  background-color: transparent;
-  text-decoration: underline;
-}
-
-a:active {
-  color: #a86c6c;
-  background-color: transparent;
-  text-decoration: underline;
-}
 nav{
 	width: 100%;
 	height: 45px;
