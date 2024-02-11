@@ -120,45 +120,8 @@ ul.nav li:not(:last-child):after {
 
       <iframe src="./ractive/" height="600" width="800"></iframe>
 
-      <p>Here are some examples of matrix transformations.</p>
+     
 
-      <table>
-        <tr>
-          <th>Transformation</th>
-          <th>Matrix</th>
-          <th>Try it (enter your parameter and hit enter)</th>
-        </tr>
-        <tr>
-          <td>Rotation by angle \(\theta\)</td>
-          <td>\(\begin{pmatrix}\cos\theta & -\sin\theta\\\sin\theta & \cos\theta\end{pmatrix}\)</td>
-          <td>\(\theta\)= <input class="example" data-type="rotation" placeholder="Enter an angle (in degrees)" size="22" type="text"/></td>
-        </tr>
-
-        <tr>
-          <td>Reflection in line $y=x\tan\theta$</td>
-          <td>\(\begin{pmatrix}\cos2\theta & \sin2\theta\\\sin2\theta & -\cos2\theta\end{pmatrix}\)</td>
-          <td>\(\theta\)= <input class="example" data-type="reflection" placeholder="Enter an angle (in degrees)" size="22" type="text"/></td>
-        </tr>
-
-         <tr>
-          <td>Uniform scaling by factor \(k\)</td>
-          <td>\(k\mathbf I=\begin{pmatrix}k & 0\\0 & k\end{pmatrix}\)</td>
-          <td>\(k\)= <input class="example" data-type="scale" placeholder="Enter a scale factor" size="22" type="text"/></td>
-        </tr>
-
-        <tr>
-          <td>Shear parallel to \(x\)-axis</td>
-          <td>\(\begin{pmatrix}1 & k\\0 & 1\end{pmatrix}\)</td>
-          <td>\(k\)= <input class="example" data-type="shearX" placeholder="Enter a shear factor" size="22" type="text"/></td>
-        </tr>
-
-        <tr>
-          <td>Shear parallel to \(y\)-axis</td>
-          <td>\(\begin{pmatrix}1 & 0\\k & 1\end{pmatrix}\)</td>
-          <td>\(k\)= <input class="example" data-type="shearY" placeholder="Enter a shear factor" size="22" type="text"/></td>
-        </tr>
-
-     </table>
 
             <p>Change image: <input id="image" placeholder="Enter an image URL and hit enter" size="80" type="url"/></p>
 
