@@ -44,12 +44,18 @@
       reader.onload = (event) => {
         img.src = event.target.result;
         img.onload = () => {
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          drawOriginal();
         };
       };
       reader.readAsDataURL(file);
     });
+
+    function drawOriginal() {
+      canvas.width = 400;
+      canvas.height = 400;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    }
 
     applyBtn.addEventListener("click", () => {
       if (!img.src) return alert("Please upload an image first.");
@@ -60,12 +66,42 @@
       const c = parseFloat(document.getElementById("c").value);
       const d = parseFloat(document.getElementById("d").value);
 
-      // Clear and apply transformation
+      // Base image size
+      const w = 400;
+      const h = 400;
+
+      // Compute transformed corner positions
+      const corners = [
+        { x: -w / 2, y: -h / 2 },
+        { x: w / 2, y: -h / 2 },
+        { x: w / 2, y: h / 2 },
+        { x: -w / 2, y: h / 2 },
+      ].map(({ x, y }) => ({
+        x: a * x + b * y,
+        y: c * x + d * y,
+      }));
+
+      // Compute bounding box of transformed corners
+      const xs = corners.map(p => p.x);
+      const ys = corners.map(p => p.y);
+      const minX = Math.min(...xs);
+      const maxX = Math.max(...xs);
+      const minY = Math.min(...ys);
+      const maxY = Math.max(...ys);
+
+      // Adjust canvas to fit transformed image
+      const newWidth = maxX - minX;
+      const newHeight = maxY - minY;
+      canvas.width = newWidth;
+      canvas.height = newHeight;
+
+      // Draw transformed image
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.save();
-      ctx.translate(canvas.width / 2, canvas.height / 2);
+      ctx.translate(-minX, -minY); // shift so image is fully visible
+      ctx.translate(w / 2, h / 2);
       ctx.transform(a, c, b, d, 0, 0);
-      ctx.drawImage(img, -canvas.width / 2, -canvas.height / 2, canvas.width, canvas.height);
+      ctx.drawImage(img, -w / 2, -h / 2, w, h);
       ctx.restore();
     });
   </script>
