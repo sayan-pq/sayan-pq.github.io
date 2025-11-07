@@ -3,74 +3,94 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>2x2 Matrix Image Transform (Centered Image, Large Display)</title>
+  <title>2x2 Matrix Image Transform (Full Opacity, Compact Layout)</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       text-align: center;
       background: #f5f5f5;
       margin: 0;
-      padding: 20px;
+      padding: 10px;
     }
-    h1 { margin-bottom: 10px; }
+    h1 {
+      margin: 10px 0;
+    }
+    .controls {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+    .matrix-input {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .matrix-input div {
+      display: flex;
+    }
     .matrix-input input {
-      width: 60px;
+      width: 50px;
       font-size: 16px;
-      margin: 5px;
+      margin: 3px;
+      text-align: center;
+    }
+    button {
+      margin: 3px;
+      padding: 6px 12px;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    .determinant-display {
+      font-size: 17px;
+      font-weight: bold;
+      margin-left: 10px;
+    }
+    .rotation-control {
+      margin-top: 5px;
+      margin-bottom: 8px;
+    }
+    .rotation-control input {
+      width: 70px;
+      font-size: 15px;
       text-align: center;
     }
     canvas {
       border: 1px solid #000;
-      margin-top: 20px;
       background: white;
-    }
-    button {
-      margin: 5px;
-      padding: 8px 12px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-    .rotation-control {
-      margin-top: 15px;
-    }
-    .rotation-control input {
-      width: 80px;
-      font-size: 16px;
-      text-align: center;
-    }
-    .determinant-display {
-      font-size: 18px;
-      margin-top: 15px;
-      font-weight: bold;
+      display: block;
+      margin: 0 auto;
     }
   </style>
 </head>
 <body>
   <h1>2×2 Matrix Image Transform</h1>
 
-  <!-- Matrix Input -->
-  <div class="matrix-input">
-    <div>
-      <input type="number" id="a" value="1" step="0.1">
-      <input type="number" id="b" value="0" step="0.1">
+  <div class="controls">
+    <div class="matrix-input">
+      <div>
+        <input type="number" id="a" value="1" step="0.1">
+        <input type="number" id="b" value="0" step="0.1">
+      </div>
+      <div>
+        <input type="number" id="c" value="0" step="0.1">
+        <input type="number" id="d" value="1" step="0.1">
+      </div>
     </div>
     <div>
-      <input type="number" id="c" value="0" step="0.1">
-      <input type="number" id="d" value="1" step="0.1">
+      <button onclick="applyMatrix()">Apply Matrix</button>
+      <div id="det-output" class="determinant-display"></div>
     </div>
-    <button onclick="applyMatrix()">Apply Matrix</button>
   </div>
 
-  <!-- Rotation Tab -->
   <div class="rotation-control">
     <label>Rotation by 
       <input type="number" id="angle" value="45" step="1"> degrees
     </label>
     <button onclick="applyRotation()">Rotate</button>
   </div>
-
-  <!-- Determinant Display -->
-  <div id="det-output" class="determinant-display"></div>
 
   <canvas id="canvas" width="800" height="800"></canvas>
 
@@ -82,16 +102,14 @@
     img.src = 'https://upload.wikimedia.org/wikipedia/en/7/7d/Lenna_%28test_image%29.png';
     img.onload = () => drawScene();
 
-    // Draw coordinate grid
     function drawGrid() {
       const step = 40;
       const w = canvas.width, h = canvas.height;
       ctx.clearRect(0, 0, w, h);
       ctx.save();
-      ctx.strokeStyle = '#cccccc';
+      ctx.strokeStyle = '#dddddd';
       ctx.lineWidth = 1;
 
-      // Vertical lines
       for (let x = 0; x <= w; x += step) {
         ctx.beginPath();
         ctx.moveTo(x, 0);
@@ -99,7 +117,6 @@
         ctx.stroke();
       }
 
-      // Horizontal lines
       for (let y = 0; y <= h; y += step) {
         ctx.beginPath();
         ctx.moveTo(0, y);
@@ -107,35 +124,29 @@
         ctx.stroke();
       }
 
-      // Axes
       ctx.strokeStyle = '#555';
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 1.5;
       ctx.beginPath();
-      ctx.moveTo(w / 2, 0);
-      ctx.lineTo(w / 2, h);
-      ctx.moveTo(0, h / 2);
-      ctx.lineTo(w, h / 2);
+      ctx.moveTo(w/2, 0);
+      ctx.lineTo(w/2, h);
+      ctx.moveTo(0, h/2);
+      ctx.lineTo(w, h/2);
       ctx.stroke();
       ctx.restore();
     }
 
-    // Draw image centered
     function drawScene() {
       drawGrid();
-      ctx.globalAlpha = 1;  
       const size = 400;
       ctx.drawImage(img, (canvas.width - size) / 2, (canvas.height - size) / 2, size, size);
-      ctx.globalAlpha = 1.0;
     }
 
-    // Compute and show determinant
     function displayDeterminant(a, b, c, d) {
       const det = a * d - b * c;
-      document.getElementById('det-output').innerText = `Determinant = ${det.toFixed(3)}`;
+      document.getElementById('det-output').innerText = `Det = ${det.toFixed(3)}`;
       return det;
     }
 
-    // Apply matrix transformation while keeping image centered
     function applyMatrix() {
       const a = parseFloat(document.getElementById('a').value);
       const b = parseFloat(document.getElementById('b').value);
@@ -145,9 +156,8 @@
 
       drawGrid();
       ctx.save();
-      ctx.globalAlpha = 1;
 
-      const size = 400; // keep image size constant
+      const size = 400;
       const cx = canvas.width / 2;
       const cy = canvas.height / 2;
 
@@ -158,7 +168,6 @@
       ctx.restore();
     }
 
-    // Apply rotation by degree input
     function applyRotation() {
       const deg = parseFloat(document.getElementById('angle').value);
       const rad = deg * Math.PI / 180;
