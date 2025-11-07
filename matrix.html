@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>2x2 Matrix Image Transform (Full Opacity, Compact Layout)</title>
+  <title>2x2 Matrix Image Transform (Correct Orientation)</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -63,6 +63,14 @@
       display: block;
       margin: 0 auto;
     }
+    .upload-section {
+      margin-top: 10px;
+    }
+    #image-info {
+      font-size: 14px;
+      color: #333;
+      margin-top: 5px;
+    }
   </style>
 </head>
 <body>
@@ -94,13 +102,29 @@
 
   <canvas id="canvas" width="800" height="800"></canvas>
 
+  <!-- Image upload -->
+  <div class="upload-section">
+    <label for="fileInput"><strong>Upload your own image:</strong></label>
+    <input type="file" id="fileInput" accept="image/*">
+    <div id="image-info"></div>
+  </div>
+
   <script>
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
     const img = new Image();
+    const imageInfo = document.getElementById('image-info');
+
     img.crossOrigin = "anonymous";
     img.src = 'https://upload.wikimedia.org/wikipedia/en/7/7d/Lenna_%28test_image%29.png';
-    img.onload = () => drawScene();
+    img.onload = () => {
+      updateImageInfo();
+      drawScene();
+    };
+
+    function updateImageInfo() {
+      imageInfo.textContent = `Current image size: ${img.width} × ${img.height}`;
+    }
 
     function drawGrid() {
       const step = 40;
@@ -137,8 +161,24 @@
 
     function drawScene() {
       drawGrid();
-      const size = 400;
-      ctx.drawImage(img, (canvas.width - size) / 2, (canvas.height - size) / 2, size, size);
+
+      // keep aspect ratio
+      const maxSize = 400;
+      const aspect = img.width / img.height;
+      let drawW, drawH;
+
+      if (aspect >= 1) {
+        drawW = maxSize;
+        drawH = maxSize / aspect;
+      } else {
+        drawH = maxSize;
+        drawW = maxSize * aspect;
+      }
+
+      const x = (canvas.width - drawW) / 2;
+      const y = (canvas.height - drawH) / 2;
+
+      ctx.drawImage(img, x, y, drawW, drawH);
     }
 
     function displayDeterminant(a, b, c, d) {
@@ -148,39 +188,75 @@
     }
 
     function applyMatrix() {
-      const a = parseFloat(document.getElementById('a').value);
-      const b = parseFloat(document.getElementById('b').value);
-      const c = parseFloat(document.getElementById('c').value);
-      const d = parseFloat(document.getElementById('d').value);
-      const det = displayDeterminant(a,b,c,d);
+  const a = parseFloat(document.getElementById('a').value);
+  const b = parseFloat(document.getElementById('b').value);
+  const c = parseFloat(document.getElementById('c').value);
+  const d = parseFloat(document.getElementById('d').value);
+  const det = displayDeterminant(a,b,c,d);
 
-      drawGrid();
-      ctx.save();
+  drawGrid();
+  ctx.save();
 
-      const size = 400;
-      const cx = canvas.width / 2;
-      const cy = canvas.height / 2;
+  const maxSize = 400;
+  const aspect = img.width / img.height;
+  let drawW, drawH;
 
-      ctx.translate(cx, cy);
-      ctx.transform(a, c, b, d, 0, 0);
-      ctx.drawImage(img, -size / 2, -size / 2, size, size);
+  if (aspect >= 1) {
+    drawW = maxSize;
+    drawH = maxSize / aspect;
+  } else {
+    drawH = maxSize;
+    drawW = maxSize * aspect;
+  }
 
-      ctx.restore();
-    }
+  const cx = canvas.width / 2;
+  const cy = canvas.height / 2;
+
+  // ✅ Flip Y-axis for true math orientation
+  ctx.translate(cx, cy);
+  ctx.scale(1, -1);
+  ctx.transform(a, c, b, d, 0, 0);
+
+  // ✅ Flip back image vertically (so it appears right-side up)
+  ctx.scale(1, -1);
+
+  ctx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH);
+  ctx.restore();
+}
+
 
     function applyRotation() {
-      const deg = parseFloat(document.getElementById('angle').value);
-      const rad = deg * Math.PI / 180;
-      const a = Math.cos(rad);
-      const b = -Math.sin(rad);
-      const c = Math.sin(rad);
-      const d = Math.cos(rad);
-      document.getElementById('a').value = a.toFixed(3);
-      document.getElementById('b').value = b.toFixed(3);
-      document.getElementById('c').value = c.toFixed(3);
-      document.getElementById('d').value = d.toFixed(3);
-      applyMatrix();
-    }
+  const deg = parseFloat(document.getElementById('angle').value);
+  const rad = deg * Math.PI / 180;
+
+  // Standard math rotation (counterclockwise)
+  const a = Math.cos(rad);
+  const b = -Math.sin(rad);
+  const c = Math.sin(rad);
+  const d = Math.cos(rad);
+
+  document.getElementById('a').value = a.toFixed(3);
+  document.getElementById('b').value = b.toFixed(3);
+  document.getElementById('c').value = c.toFixed(3);
+  document.getElementById('d').value = d.toFixed(3);
+
+  applyMatrix();
+}
+    // Handle user image upload
+    document.getElementById('fileInput').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        img.src = evt.target.result;
+        img.onload = () => {
+          updateImageInfo();
+          drawScene();
+        };
+      };
+      reader.readAsDataURL(file);
+    });
   </script>
 </body>
 </html>
