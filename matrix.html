@@ -1,109 +1,177 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>2×2 Matrix Transform on Image</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2x2 Matrix Image Transform (Centered Image, Large Display)</title>
   <style>
     body {
-      font-family: sans-serif;
+      font-family: Arial, sans-serif;
       text-align: center;
-      background: #fafafa;
-      margin-top: 30px;
+      background: #f5f5f5;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 { margin-bottom: 10px; }
+    .matrix-input input {
+      width: 60px;
+      font-size: 16px;
+      margin: 5px;
+      text-align: center;
     }
     canvas {
-      border: 1px solid #ccc;
+      border: 1px solid #000;
       margin-top: 20px;
+      background: white;
+    }
+    button {
+      margin: 5px;
+      padding: 8px 12px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .rotation-control {
+      margin-top: 15px;
+    }
+    .rotation-control input {
+      width: 80px;
+      font-size: 16px;
+      text-align: center;
+    }
+    .determinant-display {
+      font-size: 18px;
+      margin-top: 15px;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
-  <h2>2×2 Matrix Transformation on Image</h2>
-  <p>
-    Matrix:
-    <input id="a" type="number" value="1" step="0.1"> 
-    <input id="b" type="number" value="0" step="0.1"><br>
-    <input id="c" type="number" value="0" step="0.1"> 
-    <input id="d" type="number" value="1" step="0.1">
-  </p>
-  <input type="file" id="fileInput" accept="image/*" />
-  <button id="applyBtn">Apply Transformation</button>
-  <br>
-  <canvas id="canvas" width="400" height="400"></canvas>
+  <h1>2×2 Matrix Image Transform</h1>
+
+  <!-- Matrix Input -->
+  <div class="matrix-input">
+    <div>
+      <input type="number" id="a" value="1" step="0.1">
+      <input type="number" id="b" value="0" step="0.1">
+    </div>
+    <div>
+      <input type="number" id="c" value="0" step="0.1">
+      <input type="number" id="d" value="1" step="0.1">
+    </div>
+    <button onclick="applyMatrix()">Apply Matrix</button>
+  </div>
+
+  <!-- Rotation Tab -->
+  <div class="rotation-control">
+    <label>Rotation by 
+      <input type="number" id="angle" value="45" step="1"> degrees
+    </label>
+    <button onclick="applyRotation()">Rotate</button>
+  </div>
+
+  <!-- Determinant Display -->
+  <div id="det-output" class="determinant-display"></div>
+
+  <canvas id="canvas" width="800" height="800"></canvas>
 
   <script>
-    const fileInput = document.getElementById("fileInput");
-    const applyBtn = document.getElementById("applyBtn");
-    const canvas = document.getElementById("canvas");
-    const ctx = canvas.getContext("2d");
-    let img = new Image();
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.src = 'https://upload.wikimedia.org/wikipedia/en/7/7d/Lenna_%28test_image%29.png';
+    img.onload = () => drawScene();
 
-    fileInput.addEventListener("change", (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        img.src = event.target.result;
-        img.onload = () => {
-          drawOriginal();
-        };
-      };
-      reader.readAsDataURL(file);
-    });
+    // Draw coordinate grid
+    function drawGrid() {
+      const step = 40;
+      const w = canvas.width, h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+      ctx.save();
+      ctx.strokeStyle = '#cccccc';
+      ctx.lineWidth = 1;
 
-    function drawOriginal() {
-      canvas.width = 400;
-      canvas.height = 400;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      // Vertical lines
+      for (let x = 0; x <= w; x += step) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, h);
+        ctx.stroke();
+      }
+
+      // Horizontal lines
+      for (let y = 0; y <= h; y += step) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(w, y);
+        ctx.stroke();
+      }
+
+      // Axes
+      ctx.strokeStyle = '#555';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(w / 2, 0);
+      ctx.lineTo(w / 2, h);
+      ctx.moveTo(0, h / 2);
+      ctx.lineTo(w, h / 2);
+      ctx.stroke();
+      ctx.restore();
     }
 
-    applyBtn.addEventListener("click", () => {
-      if (!img.src) return alert("Please upload an image first.");
+    // Draw image centered
+    function drawScene() {
+      drawGrid();
+      ctx.globalAlpha = 1;  
+      const size = 400;
+      ctx.drawImage(img, (canvas.width - size) / 2, (canvas.height - size) / 2, size, size);
+      ctx.globalAlpha = 1.0;
+    }
 
-      // Get matrix values
-      const a = parseFloat(document.getElementById("a").value);
-      const b = parseFloat(document.getElementById("b").value);
-      const c = parseFloat(document.getElementById("c").value);
-      const d = parseFloat(document.getElementById("d").value);
+    // Compute and show determinant
+    function displayDeterminant(a, b, c, d) {
+      const det = a * d - b * c;
+      document.getElementById('det-output').innerText = `Determinant = ${det.toFixed(3)}`;
+      return det;
+    }
 
-      // Base image size
-      const w = 400;
-      const h = 400;
+    // Apply matrix transformation while keeping image centered
+    function applyMatrix() {
+      const a = parseFloat(document.getElementById('a').value);
+      const b = parseFloat(document.getElementById('b').value);
+      const c = parseFloat(document.getElementById('c').value);
+      const d = parseFloat(document.getElementById('d').value);
+      const det = displayDeterminant(a,b,c,d);
 
-      // Compute transformed corner positions
-      const corners = [
-        { x: -w / 2, y: -h / 2 },
-        { x: w / 2, y: -h / 2 },
-        { x: w / 2, y: h / 2 },
-        { x: -w / 2, y: h / 2 },
-      ].map(({ x, y }) => ({
-        x: a * x + b * y,
-        y: c * x + d * y,
-      }));
-
-      // Compute bounding box of transformed corners
-      const xs = corners.map(p => p.x);
-      const ys = corners.map(p => p.y);
-      const minX = Math.min(...xs);
-      const maxX = Math.max(...xs);
-      const minY = Math.min(...ys);
-      const maxY = Math.max(...ys);
-
-      // Adjust canvas to fit transformed image
-      const newWidth = maxX - minX;
-      const newHeight = maxY - minY;
-      canvas.width = newWidth;
-      canvas.height = newHeight;
-
-      // Draw transformed image
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawGrid();
       ctx.save();
-      ctx.translate(-minX, -minY); // shift so image is fully visible
-      ctx.translate(w / 2, h / 2);
+      ctx.globalAlpha = 1;
+
+      const size = 400; // keep image size constant
+      const cx = canvas.width / 2;
+      const cy = canvas.height / 2;
+
+      ctx.translate(cx, cy);
       ctx.transform(a, c, b, d, 0, 0);
-      ctx.drawImage(img, -w / 2, -h / 2, w, h);
+      ctx.drawImage(img, -size / 2, -size / 2, size, size);
+
       ctx.restore();
-    });
+    }
+
+    // Apply rotation by degree input
+    function applyRotation() {
+      const deg = parseFloat(document.getElementById('angle').value);
+      const rad = deg * Math.PI / 180;
+      const a = Math.cos(rad);
+      const b = -Math.sin(rad);
+      const c = Math.sin(rad);
+      const d = Math.cos(rad);
+      document.getElementById('a').value = a.toFixed(3);
+      document.getElementById('b').value = b.toFixed(3);
+      document.getElementById('c').value = c.toFixed(3);
+      document.getElementById('d').value = d.toFixed(3);
+      applyMatrix();
+    }
   </script>
 </body>
 </html>
