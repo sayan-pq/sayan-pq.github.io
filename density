@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Probability Distributions</title>
+
+<script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@3.1.0/plotly.min.js"></script>
+
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 0 20px;
+    color: #222;
+  }
+
+  h1 {
+    text-align: center;
+  }
+
+  .distribution {
+    margin-bottom: 60px;
+  }
+
+  .controls {
+    display: flex;
+    gap: 40px;
+    flex-wrap: wrap;
+    margin: 15px 0;
+  }
+
+  .control {
+    min-width: 250px;
+  }
+
+  input[type="range"] {
+    width: 220px;
+  }
+
+  .plot {
+    width: 100%;
+    height: 420px;
+  }
+
+  .value {
+    font-weight: bold;
+  }
+</style>
+</head>
+
+
+<body>
+
+<h1>Interactive Probability Densities</h1>
+
+
+<!-- ========================================================= -->
+<!-- GAMMA DISTRIBUTION -->
+<!-- ========================================================= -->
+
+<div class="distribution">
+
+<h2>Gamma Distribution</h2>
+
+<div class="controls">
+
+  <div class="control">
+    <label>
+      α =
+      <span id="gammaAlphaValue" class="value">2.0</span>
+    </label>
+    <br>
+    <input
+      type="range"
+      id="gammaAlpha"
+      min="0.2"
+      max="10"
+      step="0.1"
+      value="2"
+    >
+  </div>
+
+
+  <div class="control">
+    <label>
+      λ =
+      <span id="gammaLambdaValue" class="value">1.0</span>
+    </label>
+    <br>
+    <input
+      type="range"
+      id="gammaLambda"
+      min="0.2"
+      max="5"
+      step="0.1"
+      value="1"
+    >
+  </div>
+
+</div>
+
+<div id="gammaPlot" class="plot"></div>
+
+</div>
+
+
+
+<!-- ========================================================= -->
+<!-- BETA DISTRIBUTION -->
+<!-- ========================================================= -->
+
+<div class="distribution">
+
+<h2>Beta Distribution</h2>
+
+<div class="controls">
+
+  <div class="control">
+    <label>
+      α =
+      <span id="betaAlphaValue" class="value">2.0</span>
+    </label>
+    <br>
+    <input
+      type="range"
+      id="betaAlpha"
+      min="0.2"
+      max="10"
+      step="0.1"
+      value="2"
+    >
+  </div>
+
+
+  <div class="control">
+    <label>
+      β =
+      <span id="betaBetaValue" class="value">2.0</span>
+    </label>
+    <br>
+    <input
+      type="range"
+      id="betaBeta"
+      min="0.2"
+      max="10"
+      step="0.1"
+      value="2"
+    >
+  </div>
+
+</div>
+
+<div id="betaPlot" class="plot"></div>
+
+</div>
+
+
+
+<!-- ========================================================= -->
+<!-- NORMAL DISTRIBUTION -->
+<!-- ========================================================= -->
+
+<div class="distribution">
+
+<h2>Normal Distribution</h2>
+
+<div class="controls">
+
+  <div class="control">
+    <label>
+      μ =
+      <span id="normalMuValue" class="value">0.0</span>
+    </label>
+    <br>
+    <input
+      type="range"
+      id="normalMu"
+      min="-5"
+      max="5"
+      step="0.1"
+      value="0"
+    >
+  </div>
+
+
+  <div class="control">
+    <label>
+      σ² =
+      <span id="normalVarianceValue" class="value">1.0</span>
+    </label>
+    <br>
+    <input
+      type="range"
+      id="normalVariance"
+      min="0.1"
+      max="10"
+      step="0.1"
+      value="1"
+    >
+  </div>
+
+</div>
+
+<div id="normalPlot" class="plot"></div>
+
+</div>
+
+
+
+<script>
+
+/* ============================================================
+   LOG GAMMA FUNCTION
+   Lanczos approximation
+   ============================================================ */
+
+function logGamma(z) {
+
+    const p = [
+        0.99999999999980993,
+        676.5203681218851,
+       -1259.1392167224028,
+        771.32342877765313,
+       -176.61502916214059,
+        12.507343278686905,
+       -0.13857109526572012,
+        9.9843695780195716e-6,
+        1.5056327351493116e-7
+    ];
+
+    if (z < 0.5) {
+        return Math.log(Math.PI)
+               - Math.log(Math.sin(Math.PI * z))
+               - logGamma(1 - z);
+    }
+
+    z -= 1;
+
+    let x = p[0];
+
+    for (let i = 1; i < p.length; i++) {
+        x += p[i] / (z + i);
+    }
+
+    const t = z + 7.5;
+
+    return 0.5 * Math.log(2 * Math.PI)
+           + (z + 0.5) * Math.log(t)
+           - t
+           + Math.log(x);
+}
+
+
+
+/* ============================================================
+   GAMMA DENSITY
+   shape = alpha
+   rate  = lambda
+   ============================================================ */
+
+function gammaPDF(x, alpha, lambda) {
+
+    if (x <= 0) return 0;
+
+    const logDensity =
+        alpha * Math.log(lambda)
+        - logGamma(alpha)
+        + (alpha - 1) * Math.log(x)
+        - lambda * x;
+
+    return Math.exp(logDensity);
+}
+
+
+function updateGamma() {
+
+    const alpha =
+        parseFloat(document.getElementById("gammaAlpha").value);
+
+    const lambda =
+        parseFloat(document.getElementById("gammaLambda").value);
+
+    document.getElementById("gammaAlphaValue").textContent =
+        alpha.toFixed(1);
+
+    document.getElementById("gammaLambdaValue").textContent =
+        lambda.toFixed(1);
+
+
+    const mean = alpha / lambda;
+
+    const sd = Math.sqrt(alpha) / lambda;
+
+    const xmax = Math.max(5, mean + 5 * sd);
+
+
+    let x = [];
+    let y = [];
+
+    const n = 600;
+
+    for (let i = 1; i <= n; i++) {
+
+        const xi = xmax * i / n;
+
+        x.push(xi);
+
+        y.push(gammaPDF(xi, alpha, lambda));
+    }
+
+
+    Plotly.react(
+        "gammaPlot",
+
+        [{
+            x: x,
+            y: y,
+            mode: "lines",
+            line: { width: 3 },
+            hovertemplate:
+                "x = %{x:.3f}<br>f(x) = %{y:.3f}<extra></extra>"
+        }],
+
+        {
+            title:
+                "Gamma(" +
+                alpha.toFixed(1) +
+                ", " +
+                lambda.toFixed(1) +
+                ")",
+
+            xaxis: {
+                title: "x",
+                range: [0, xmax]
+            },
+
+            yaxis: {
+                title: "Density",
+                rangemode: "tozero"
+            },
+
+            margin: {
+                l: 60,
+                r: 20,
+                b: 55,
+                t: 60
+            }
+        },
+
+        {
+            responsive: true,
+            displayModeBar: false
+        }
+    );
+}
+
+
+
+/* ============================================================
+   BETA DENSITY
+   ============================================================ */
+
+function betaPDF(x, alpha, beta) {
+
+    if (x <= 0 || x >= 1) return 0;
+
+    const logB =
+        logGamma(alpha)
+        + logGamma(beta)
+        - logGamma(alpha + beta);
+
+    const logDensity =
+        (alpha - 1) * Math.log(x)
+        + (beta - 1) * Math.log(1 - x)
+        - logB;
+
+    return Math.exp(logDensity);
+}
+
+
+function updateBeta() {
+
+    const alpha =
+        parseFloat(document.getElementById("betaAlpha").value);
+
+    const beta =
+        parseFloat(document.getElementById("betaBeta").value);
+
+    document.getElementById("betaAlphaValue").textContent =
+        alpha.toFixed(1);
+
+    document.getElementById("betaBetaValue").textContent =
+        beta.toFixed(1);
+
+
+    let x = [];
+    let y = [];
+
+    const n = 700;
+
+    for (let i = 1; i < n; i++) {
+
+        const xi = i / n;
+
+        x.push(xi);
+
+        y.push(betaPDF(xi, alpha, beta));
+    }
+
+
+    Plotly.react(
+        "betaPlot",
+
+        [{
+            x: x,
+            y: y,
+            mode: "lines",
+            line: { width: 3 },
+            hovertemplate:
+                "x = %{x:.3f}<br>f(x) = %{y:.3f}<extra></extra>"
+        }],
+
+        {
+            title:
+                "Beta(" +
+                alpha.toFixed(1) +
+                ", " +
+                beta.toFixed(1) +
+                ")",
+
+            xaxis: {
+                title: "x",
+                range: [0, 1]
+            },
+
+            yaxis: {
+                title: "Density",
+                rangemode: "tozero"
+            },
+
+            margin: {
+                l: 60,
+                r: 20,
+                b: 55,
+                t: 60
+            }
+        },
+
+        {
+            responsive: true,
+            displayModeBar: false
+        }
+    );
+}
+
+
+
+/* ============================================================
+   NORMAL DENSITY
+   Parameters: mu and variance sigma^2
+   ============================================================ */
+
+function normalPDF(x, mu, variance) {
+
+    const sigma = Math.sqrt(variance);
+
+    return (
+        1 / (Math.sqrt(2 * Math.PI) * sigma)
+    ) *
+    Math.exp(
+        -Math.pow(x - mu, 2) /
+        (2 * variance)
+    );
+}
+
+
+function updateNormal() {
+
+    const mu =
+        parseFloat(document.getElementById("normalMu").value);
+
+    const variance =
+        parseFloat(
+            document.getElementById("normalVariance").value
+        );
+
+    document.getElementById("normalMuValue").textContent =
+        mu.toFixed(1);
+
+    document.getElementById("normalVarianceValue").textContent =
+        variance.toFixed(1);
+
+
+    const sigma = Math.sqrt(variance);
+
+    const xmin = mu - 4.5 * sigma;
+    const xmax = mu + 4.5 * sigma;
+
+
+    let x = [];
+    let y = [];
+
+    const n = 600;
+
+    for (let i = 0; i <= n; i++) {
+
+        const xi =
+            xmin + (xmax - xmin) * i / n;
+
+        x.push(xi);
+
+        y.push(normalPDF(xi, mu, variance));
+    }
+
+
+    Plotly.react(
+        "normalPlot",
+
+        [{
+            x: x,
+            y: y,
+            mode: "lines",
+            line: { width: 3 },
+            hovertemplate:
+                "x = %{x:.3f}<br>f(x) = %{y:.3f}<extra></extra>"
+        }],
+
+        {
+            title:
+                "Normal(" +
+                mu.toFixed(1) +
+                ", " +
+                variance.toFixed(1) +
+                ")",
+
+            xaxis: {
+                title: "x",
+                range: [xmin, xmax]
+            },
+
+            yaxis: {
+                title: "Density",
+                rangemode: "tozero"
+            },
+
+            margin: {
+                l: 60,
+                r: 20,
+                b: 55,
+                t: 60
+            }
+        },
+
+        {
+            responsive: true,
+            displayModeBar: false
+        }
+    );
+}
+
+
+
+/* ============================================================
+   SLIDER EVENTS
+   ============================================================ */
+
+document
+    .getElementById("gammaAlpha")
+    .addEventListener("input", updateGamma);
+
+document
+    .getElementById("gammaLambda")
+    .addEventListener("input", updateGamma);
+
+
+document
+    .getElementById("betaAlpha")
+    .addEventListener("input", updateBeta);
+
+document
+    .getElementById("betaBeta")
+    .addEventListener("input", updateBeta);
+
+
+document
+    .getElementById("normalMu")
+    .addEventListener("input", updateNormal);
+
+document
+    .getElementById("normalVariance")
+    .addEventListener("input", updateNormal);
+
+
+
+/* Initial plots */
+
+updateGamma();
+updateBeta();
+updateNormal();
+
+</script>
+
+</body>
+</html>
